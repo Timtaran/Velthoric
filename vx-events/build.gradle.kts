@@ -1,9 +1,9 @@
 architectury {
-    common rootProject.enabled_platforms.split(',')
+    common rootProject.enabled_platforms.split(",")
 }
 
-group = 'net.xmx.vxevents'
-version = '0.0.1'
+group = "net.xmx.vxevents"
+version = "0.0.1"
 
 dependencies {
     // Use Fabric @Environment only; do not use other Fabric Loader classes.

@@ -1,10 +1,5 @@
 plugins {
-    id 'com.gradleup.shadow'
-}
-
-architectury {
-    platformSetupLoomIde()
-    fabric()
+    id "com.gradleup.shadow"
 }
 
 loom {
@@ -14,16 +9,17 @@ loom {
         }
         client {
             runDir "run-client"
-            programArgs '--username', 'dev'
-
-            vmArg "-XX:+UnlockDiagnosticVMOptions"
-            vmArg "-XX:+DebugNonSafepoints"
+            programArgs "--username", "dev"
         }
     }
 
     accessWidenerPath = project(":common").loom.accessWidenerPath
 }
 
+architectury {
+    platformSetupLoomIde()
+    neoForge()
+}
 
 configurations {
     common {
@@ -32,7 +28,7 @@ configurations {
     }
     compileClasspath.extendsFrom common
     runtimeClasspath.extendsFrom common
-    developmentFabric.extendsFrom common
+    developmentNeoForge.extendsFrom common
 
     shadowBundle {
         canBeResolved = true
@@ -40,49 +36,49 @@ configurations {
     }
 }
 
+repositories {
+    maven {
+        name = 'NeoForged'
+        url = 'https://maven.neoforged.net/releases'
+    }
+    mavenCentral()
+}
+
 dependencies {
-    modImplementation "net.fabricmc:fabric-loader:$rootProject.fabric_loader_version"
+    neoForge "net.neoforged:neoforge:$rootProject.neoforge_version"
 
-    include(implementation(annotationProcessor("io.github.llamalad7:mixinextras-fabric:$mixinextras_version")))
-
-    modImplementation "net.fabricmc.fabric-api:fabric-api:$rootProject.fabric_api_version"
-    modImplementation "curse.maven:sodium-394468:6382649"
-    modImplementation "curse.maven:modmenu-308702:5810603"
-    modImplementation "curse.maven:lithium-360438:7246287"
-
-    modImplementation "dev.architectury:architectury-fabric:$rootProject.architectury_api_version"
+    modImplementation "dev.architectury:architectury-neoforge:$rootProject.architectury_api_version"
 
     minecraftRuntimeLibraries(project(path: ":vx-native", configuration: "namedElements"))
     shadowBundle project(path: ":vx-native", configuration: "namedElements")
 
     common(project(path: ":vx-events", configuration: "namedElements")) { transitive false }
-    shadowBundle project(path: ":vx-events", configuration: "transformProductionFabric")
+    shadowBundle project(path: ":vx-events", configuration: "transformProductionNeoForge")
 
     common(project(path: ':common', configuration: 'namedElements')) { transitive false }
-    shadowBundle project(path: ':common', configuration: 'transformProductionFabric')
+    shadowBundle project(path: ':common', configuration: 'transformProductionNeoForge')
 }
 
 processResources {
-    def propertiesToExpand = [
+    var replaceProperties = [
             minecraft_version: rootProject.minecraft_version,
+            minecraft_version_range: rootProject.minecraft_version_range,
+            neoforge_version: rootProject.neoforge_version,
+            neoforge_version_range: rootProject.neoforge_version_range,
+            loader_version_range: rootProject.loader_version_range,
             mod_id: rootProject.mod_id,
             mod_name: rootProject.mod_name,
             mod_license: rootProject.mod_license,
             mod_version: rootProject.mod_version,
             mod_authors: rootProject.mod_authors,
             mod_description: rootProject.mod_description,
-            minecraft_version_range: rootProject.minecraft_version_range,
-            loader_version_range: rootProject.loader_version_range,
-
-            fabric_loader_version: rootProject.fabric_loader_version,
-            fabric_api_version: rootProject.fabric_api_version,
             architectury_api_version: rootProject.architectury_api_version
     ]
 
-    inputs.properties propertiesToExpand
+    inputs.properties replaceProperties
 
-    filesMatching(['fabric.mod.json', 'pack.mcmeta']) {
-        expand propertiesToExpand + [project: project]
+    filesMatching(['META-INF/neoforge.mods.toml', 'pack.mcmeta']) {
+        expand replaceProperties + [project: project]
     }
 }
 
@@ -123,11 +119,11 @@ publishing {
 }
 
 /**
- * Configure Velthoric Publishing for Fabric.
+ * Configure Velthoric Publishing for NeoForge.
  */
 velthoricPublishing {
-    loader = "fabric"
-    displayName = "Fabric"
+    loader = "neoforge"
+    displayName = "NeoForge"
     artifact = tasks.named("remapJar")
     dryRun = false
 }
