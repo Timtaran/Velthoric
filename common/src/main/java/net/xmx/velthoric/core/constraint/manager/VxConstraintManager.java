@@ -291,6 +291,16 @@ public class VxConstraintManager {
         return activeConstraints.containsKey(id);
     }
 
+    /**
+     * Retrieves active constraint by given ID.
+     * @param id The UUID of the constraint to retrieve.
+     * @return the constraint, or {@code null} if constraint is not found
+     */
+    @Nullable
+    public VxConstraint getActiveConstraint(UUID id) {
+        return activeConstraints.get(id);
+    }
+
     public VxConstraintStorage getConstraintStorage() {
         return constraintStorage;
     }
